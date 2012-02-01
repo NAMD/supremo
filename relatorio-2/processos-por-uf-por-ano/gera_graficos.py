@@ -41,12 +41,13 @@ def gera_graficos_por_ano():
     for arquivo in glob('dados/????.csv'):
         t = Table()
         t.read('csv', arquivo)
-        ano = arquivo.split('-')[-1].split('.')[0]
+        ano = path.basename(arquivo).split('-')[-1].split('.')[0]
         anos.append(int(ano))
         imagem = 'graficos/' + path.basename(arquivo.replace('.csv', '.png'))
         p = plota_graficos(arquivo, imagem,
                            'Processos por UF de ' + ano,
-                           total_de_processos=sum(t['processos']))
+                           total_de_processos=sum(t['processos']),
+                           y_lim=(0, 30000))
         tabela = Table()
         tabela.read('csv', arquivo)
         tabelas.append(tabela)
@@ -63,7 +64,7 @@ def gera_graficos_por_ano():
     plota_graficos('dados/tmp-processos-por-uf-geral.csv',
                    'graficos/consolidado.png',
                    'Processos por UF de {} a {}'.format(min(anos), max(anos)),
-                   y_lim=(0, 1000000),
+                   y_lim=(0, 200000),
                    total_de_processos=sum(tabela['processos']))
     remove('dados/tmp-processos-por-uf-geral.csv')
     log('OK\n', date_and_time=False)
@@ -124,15 +125,21 @@ def gera_graficos_por_porte():
         tabela_pequeno_porte.write('csv', p)
         tabela_medio_porte.write('csv', m)
         tabela_grande_porte.write('csv', g)
-        plota_graficos(p, 'graficos/' + path.basename(p.replace('.csv', '.png')),
+        nome_p = 'graficos/' + path.basename(p.replace('.csv', '.png').\
+                                               replace('tmp-', ''))
+        nome_m = 'graficos/' + path.basename(m.replace('.csv', '.png').\
+                                               replace('tmp-', ''))
+        nome_g = 'graficos/' + path.basename(g.replace('.csv', '.png').\
+                                               replace('tmp-', ''))
+        plota_graficos(p, nome_p,
                        'Processos de {} - Pequeno Porte'.format(ano),
                        y_lim=(0, 4000), total_de_processos=total_de_processos,
                        y_lim_bar=(0, 3.5), titulo_bar='Percentual no ano')
-        plota_graficos(m, 'graficos/' + path.basename(m.replace('.csv', '.png')),
+        plota_graficos(m, nome_m,
                        u'Processos de {} - Médio Porte'.format(ano),
                        y_lim=(0, 12000), total_de_processos=total_de_processos,
                        y_lim_bar=(0, 12), titulo_bar='Percentual no ano')
-        plota_graficos(g, 'graficos/' + path.basename(g.replace('.csv', '.png')),
+        plota_graficos(g, nome_g,
                        'Processos de {} - Grande Porte'.format(ano),
                        y_lim=(0, 30000), total_de_processos=total_de_processos,
                        y_lim_bar=(0, 25), titulo_bar='Percentual no ano')
