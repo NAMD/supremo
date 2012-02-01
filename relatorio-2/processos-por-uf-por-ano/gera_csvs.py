@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 '''
 Created on Feb 1, 2012
 
@@ -5,8 +8,10 @@ Created on Feb 1, 2012
 '''
 from SENutils import senDbConn
 from SENutils import write_to_csv
-###############################################################################    
-query = """ select PROCEDENCIA.sig_procedencia as UF, count(distinct PROCESSO.SEQ_OBJETO_INCIDENTE) as qtde
+
+
+query = """select PROCEDENCIA.sig_procedencia as UF, count(distinct PROCESSO.SEQ_OBJETO_INCIDENTE) as qtde
+>>>>>>> 71b6d4be9e3ea188302471448df342e441ce90b0
 from PROCESSO, JURISDICIONADO_INCIDENTE, PAPEL_JURISDICIONADO, JURISDICIONADO, HISTORICO_PROCESSO_ORIGEM, PROCEDENCIA
 where PROCESSO.num_processo = JURISDICIONADO_INCIDENTE.num_processo
 and PROCESSO.sig_classe_proces = JURISDICIONADO_INCIDENTE.sig_classe_proces
@@ -24,17 +29,18 @@ order by sig_procedencia, year(DAT_AUTUACAO)
 limit 0 , 300000 """
 
 START_YEAR = 2000
-END_YEAR = 2012
-###############################################################################    
+END_YEAR = 2010 # TODO: VER PORQUE 2010 e 2011 NAO ESTAO FUNCIONANDO!!!!
+
 def run():
     conn = senDbConn(flagRemoteSSH=True)
     cursor = conn.cursor()
     for year in range(START_YEAR,END_YEAR):
-        query_pronta = query % ( str(year), str(year+1) )
+        query_pronta = query % (str(year), str(year + 1))
         cursor.execute(query_pronta)
         resultSet = cursor.fetchall()
-        write_to_csv("dados/", str(year)+".csv", ('uf','processos'), resultSet)
+        write_to_csv("dados/", str(year) + ".csv",
+                     ('uf', 'processos'), resultSet)
         print year, '...'
-###############################################################################    
+
 if __name__ == '__main__':
     run()
