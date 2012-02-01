@@ -72,7 +72,7 @@ for arquivo, registros in conteudo:
 
     plota_graficos(p, 'graficos/' + p.replace('.csv', '.png'),
                    'Processos de {} - Pequeno Porte'.format(ano),
-                   y_lim=(0, 12000))
+                   y_lim=(0, 15000))
     plota_graficos(m, 'graficos/' + m.replace('.csv', '.png'),
                    u'Processos de {} - Médio Porte'.format(ano),
                    y_lim=(0, 120000))
