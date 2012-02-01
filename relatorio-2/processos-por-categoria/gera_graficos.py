@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from os import mkdir
+from shutil import rmtree
 from time import strftime
 from glob import glob
 from outputty import Table
@@ -10,7 +12,13 @@ from plotter import Plotter
 def log(text):
     print('[{}] {}'.format(strftime('%Y-%m-%d %H:%M:%S'), text))
 
-log('Normalizing structure...')
+try:
+    rmtree('graficos')
+except OSError:
+    pass
+mkdir('graficos')
+
+log('Normalizando estrutura...')
 areas = []
 for arquivo in glob('*.csv'):
     table = Table()
@@ -21,7 +29,7 @@ for arquivo in glob('*.csv'):
     areas.extend(table[coluna])
 
 areas = set(areas)
-for arquivo in glob('*.csv'):
+for arquivo in sorted(glob('*.csv')):
     table = Table()
     table.read('csv', arquivo)
     if 'COLUNA A' in table.headers:
@@ -39,13 +47,14 @@ for arquivo in glob('*.csv'):
                 u'Administrativo/Público (outras)')
     table.write('csv', arquivo)
 
-log('Plotting data...')
-for arquivo in glob('*.csv'):
+log('Plotando...')
+for arquivo in sorted(glob('*.csv')):
     estado = arquivo.split('-')[-1].replace('.csv', '')
+    log('  {}'.format(estado))
     p = Plotter(arquivo, width=1400, height=1050)
     p.data['Legenda'] = [u'Número de processos' for x in p.data]
     p.radar(axis_labels='area', values='processos',
             legends_column='Legenda', legends=False,
             title=u'Processos por Área - ' + estado)
-    p.save('processos-por-categoria-{}.png'.format(estado))
+    p.save('graficos/processos-por-categoria-{}.png'.format(estado))
 log('Done!')
