@@ -6,3 +6,5 @@ reg_settings.py*
 *.png
 plotter.py
 outputty
+.settings
+.directory
