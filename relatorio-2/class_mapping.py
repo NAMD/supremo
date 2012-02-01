@@ -6,7 +6,7 @@ Created on Jan 23, 2012
 '''
 from SENutils import load_csv
 from SENutils import write_to_csv
-
+###############################################################################
 def run():
     classMapping = load_csv('csv/misc/tipoDeCortePorCLASSE.csv')
     classByState = load_csv('csv/misc/classePorEstado_POR_ANO.csv')
@@ -22,9 +22,7 @@ def run():
         final[state][mapping[classe]] = final[state][mapping[classe]] + int(num)
         for k,v in final.iteritems():
             write_to_csv("csv/misc/tipoDeCortePorEstadoPorAno/",k+"_tipoDeCorte.csv",["tipo de corte","qtde processos"], v.items())
-        
-        
-        
+###############################################################################
 if __name__ == '__main__':
     run()
     pass

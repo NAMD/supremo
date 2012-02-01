@@ -5,8 +5,7 @@ Created on Feb 1, 2012
 '''
 from SENutils import senDbConn
 from SENutils import write_to_csv
-
-
+###############################################################################    
 query = """ select PROCEDENCIA.sig_procedencia as UF, count(distinct PROCESSO.SEQ_OBJETO_INCIDENTE) as qtde
 from PROCESSO, JURISDICIONADO_INCIDENTE, PAPEL_JURISDICIONADO, JURISDICIONADO, HISTORICO_PROCESSO_ORIGEM, PROCEDENCIA
 where PROCESSO.num_processo = JURISDICIONADO_INCIDENTE.num_processo
@@ -26,7 +25,7 @@ limit 0 , 300000 """
 
 START_YEAR = 2000
 END_YEAR = 2012
-
+###############################################################################    
 def run():
     conn = senDbConn(flagRemoteSSH=True)
     cursor = conn.cursor()
@@ -34,11 +33,8 @@ def run():
         query_pronta = query % ( str(year), str(year+1) )
         cursor.execute(query_pronta)
         resultSet = cursor.fetchall()
-        write_to_csv("dados/", str(year)+".csv", ('UF','QTDE'), resultSet)
+        write_to_csv("dados/", str(year)+".csv", ('uf','processos'), resultSet)
         print year, '...'
-    
-    
-
-
+###############################################################################    
 if __name__ == '__main__':
     run()

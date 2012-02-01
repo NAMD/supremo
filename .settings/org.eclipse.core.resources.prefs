@@ -1,6 +1,9 @@
-#Mon Jan 30 17:39:31 BRST 2012
+#Wed Feb 01 15:35:08 BRST 2012
 eclipse.preferences.version=1
-encoding//relatorio-2/gera_graficos.py=utf-8
+encoding//relatorio-2/class_mapping.py=utf-8
+encoding//relatorio-2/processos-por-tipo-de-corte/gera_graficos.py=utf-8
+encoding//relatorio-2/processos-por-uf-por-ano/gera_graficos.py=utf-8
+encoding//relatorio-2/processos-por-uf-por-ano/porte.py=utf-8
 encoding//relatorio-2/top_litigantes_por_uf/gera_graficos.py=utf-8
 encoding//relatorio-2/top_litigantes_por_uf_ano/\!gen/normalizador_de_litigantes.py=utf-8
 encoding/SENutils.py=utf-8

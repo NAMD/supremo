@@ -6,6 +6,7 @@ Created on Jan 5, 2012
 '''
 import MySQLdb
 import csv
+import os
 ###############################################################################
 def senDbConn(name="STF_O", flagRemoteSSH=False):
     if flagRemoteSSH:
@@ -67,6 +68,8 @@ def load_csv(filename, lines=None, encoding=None):
     return data
 ###############################################################################
 def write_to_csv(location, name, columnTitles, data):
+    if not os.path.exists(location):
+        os.makedirs(location)
     writer = csv.writer(open(location+name, 'wb'))
     writer.writerow( columnTitles )
     writer.writerows(data)
