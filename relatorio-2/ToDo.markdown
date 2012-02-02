@@ -40,6 +40,10 @@ Organização de Arquivos e Diretórios
   `processos-por-tipo-de-corte/dados` (verifique o formato dos CSVs que estão
   atualmente lá para que esse formato se mantenha e os scripts de geração de
   gráficos não se quebrem).
+- [Daniel] Adicionar `gerar_csvs.py` em `processos-por-categoria`
+- [Daniel] Rever query do `processos-por-categoria`, pois o somatório de
+  processos está dando 1.7M+ (um processo pode estar em mais de uma categoria?
+  Se sim, somar isso tudo para ver se dá 1.7M+).
 
 > Nota: vamos tentar manter os nomes de arquivos separados por '-' (a não ser
 > em casos de arquivos Python, senão não conseguimos usar 'import') e, sempre
