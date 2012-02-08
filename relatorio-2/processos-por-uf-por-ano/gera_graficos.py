@@ -11,6 +11,34 @@ from outputty import Table
 from plotter import Plotter
 from strobo import SlideShow
 
+regioes = {
+           'AC': 'Norte',
+           'AP': 'Norte',
+           'AM': 'Norte',
+           'PA': 'Norte',
+           'RO': 'Norte',
+           'RR': 'Norte',
+           'TO': 'Norte',
+           'AL': 'Nordeste',
+           'BA': 'Nordeste',
+           'CE': 'Nordeste',
+           'MA': 'Nordeste',
+           'PB': 'Nordeste',
+           'PE': 'Nordeste',
+           'PI': 'Nordeste',
+           'RN': 'Nordeste',
+           'SE': 'Nordeste',
+           'GO': 'Centro-Oeste',
+           'MT': 'Centro-Oeste',
+           'MS': 'Centro-Oeste',
+           'ES': 'Sudeste',
+           'MG': 'Sudeste',
+           'RJ': 'Sudeste',
+           'SP': 'Sudeste',
+           'PR': 'Sul',
+           'RS': 'Sul',
+           'SC': 'Sul',
+}
 
 def log(text, date_and_time=True):
     if date_and_time:
@@ -43,13 +71,20 @@ def gera_graficos():
         tabelas.append({'ano': ano, 'imagem': imagem,
                         'total_de_processos': sum(tabela['processos']),
                         'tabela': tabela})
+    anos = [info['ano'] for info in tabelas]
+    range_anos = (min(anos), max(anos))
     log('OK\n', date_and_time=False)
 
     log('Criando gráfico consolidado... ')
     processos = Counter()
+    processos_por_regiao = Counter()
     for info in tabelas:
         for registro in info['tabela'].to_list_of_dicts():
             processos[registro['uf']] += registro['processos']
+            if registro['uf'] in regioes:
+                regiao = regioes[registro['uf']]
+                processos_por_regiao[regiao] += registro['processos']
+
     tabela_consolidada = Table(headers=['uf', 'processos'])
     for item in processos.iteritems():
         tabela_consolidada.append(item)
@@ -61,6 +96,17 @@ def gera_graficos():
                    y_lim=(0, 200000),
                    total_de_processos=sum(tabela_consolidada['processos']))
     remove('dados/tmp-processos-por-uf-geral.csv')
+
+    tabela_por_regiao = Table(headers=['regiao', 'processos'])
+    for item in processos_por_regiao.iteritems():
+        tabela_por_regiao.append(item)
+    tabela_por_regiao.write('csv', 'dados/tmp-processos-por-regiao.csv')
+    p = Plotter('dados/tmp-processos-por-regiao.csv')
+    p.pie('processos', 'regiao',
+          title=u'Processos por região geográfica ({} a {})'.format(*range_anos))
+    p.save('graficos/processos-por-regiao.png')
+    remove('dados/tmp-processos-por-regiao.csv')
+
     log('OK\n', date_and_time=False)
     ufs = tabela_consolidada['uf']
 
@@ -164,8 +210,6 @@ def gera_graficos():
     consolidado_ano.write('csv', 'dados/tmp-porte-consolidado-ano.csv')
     p = Plotter('dados/tmp-porte-consolidado-ano.csv', rows=4, cols=1,
                 width=1600, height=1200)
-    anos = [info['ano'] for info in tabelas]
-    range_anos = (min(anos), max(anos))
     p.bar(x_column='Ano', legends=False,
           title=u'Pequeno Porte ({} a {})'.format(*range_anos),
           bar_width=0.5, y_columns=['Pequeno Porte'], colors=['r'])
@@ -210,4 +254,4 @@ if __name__ == '__main__':
         pass
     mkdir('graficos')
     gera_graficos()
-    gera_animacao()
+    #gera_animacao()
