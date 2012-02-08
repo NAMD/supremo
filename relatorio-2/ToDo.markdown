@@ -19,6 +19,17 @@ Gráficos para Segundo Relatório
 - [OK] Processos por categoria do Direito (em radar)
 
 
+Enviar para Pedro:
+- [OK] Tabela com percentual dos processos por estado, de 2000 a 2009 (agregado)
+  sen-code/relatorio-2/processos-por-uf-por-an/oprocessos-por-uf-consolidado-2000-a-2009.csv
+- Processos por UF em ordem FIXA do TOTAL
+- Vídeo de 2000 a 2009 dos gráficos que mostram número de processos
+  por estado
+- Gráfico que conste a evolução ano a ano dos portes (provavelmente serão 3
+  gráficos, um para cada porte)
+- Gráfico radar ou treemap com categoria de processo
+
+
 Organização de Arquivos e Diretórios
 ------------------------------------
 

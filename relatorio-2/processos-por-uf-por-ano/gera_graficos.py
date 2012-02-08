@@ -9,6 +9,7 @@ from glob import glob
 from collections import Counter
 from outputty import Table
 from plotter import Plotter
+from strobo import SlideShow
 
 
 def log(text, date_and_time=True):
@@ -19,109 +20,117 @@ def log(text, date_and_time=True):
     stdout.flush()
 
 def plota_graficos(arquivo, imagem, titulo, total_de_processos,
-                   y_lim=(0, 160000), y_lim_bar=(0, 30), titulo_2='',
-                   titulo_bar=''):
-    p = Plotter(arquivo, rows=3, cols=1)
-    p.scatter(x_column='uf', title=titulo,
-              order_by='uf', ordering='asc', labels=False, legends=None,
-              y_lim=y_lim)
-    p.scatter(x_column='uf', title=titulo_2, order_by='processos', ordering='desc',
+                   y_lim=(0, 160000), y_lim_bar=(0, 30), titulo_bar=''):
+    p = Plotter(arquivo, rows=2, cols=1)
+    p.scatter(x_column='uf', title=titulo, y_label=u'Número de processos',
               labels=False, legends=None, y_lim=y_lim)
     p.data['processos'] = [100.0 * x / total_de_processos \
                            for x in p.data['processos']]
-    p.data.order_by('processos', 'desc')
     p.bar(x_column='uf', title=titulo_bar, legends=None,
           y_label='Percentual de processos', y_lim=y_lim_bar)
     p.save(imagem)
 
-def gera_graficos_por_ano():
-    log('Criando gráficos por ano... ')
+def gera_graficos():
+    log('Coletando dados... ')
     tabelas = []
     anos = []
-    for arquivo in glob('dados/????.csv'):
-        t = Table()
-        t.read('csv', arquivo)
+    for arquivo in sorted(glob('dados/????.csv')):
+        tabela = Table()
+        tabela.read('csv', arquivo)
         ano = path.basename(arquivo).split('-')[-1].split('.')[0]
         anos.append(int(ano))
         imagem = 'graficos/' + path.basename(arquivo.replace('.csv', '.png'))
-        p = plota_graficos(arquivo, imagem,
-                           'Processos por UF de ' + ano,
-                           total_de_processos=sum(t['processos']),
-                           y_lim=(0, 30000))
-        tabela = Table()
-        tabela.read('csv', arquivo)
-        tabelas.append(tabela)
+        tabelas.append({'ano': ano, 'imagem': imagem,
+                        'total_de_processos': sum(tabela['processos']),
+                        'tabela': tabela})
     log('OK\n', date_and_time=False)
+
     log('Criando gráfico consolidado... ')
     processos = Counter()
-    for tabela in tabelas:
-        for registro in tabela.to_list_of_dicts():
+    for info in tabelas:
+        for registro in info['tabela'].to_list_of_dicts():
             processos[registro['uf']] += registro['processos']
-    tabela = Table(headers=['uf', 'processos'])
+    tabela_consolidada = Table(headers=['uf', 'processos'])
     for item in processos.iteritems():
-        tabela.append(item)
-    tabela.write('csv', 'dados/tmp-processos-por-uf-geral.csv')
+        tabela_consolidada.append(item)
+    tabela_consolidada.order_by('processos', 'desc')
+    tabela_consolidada.write('csv', 'dados/tmp-processos-por-uf-geral.csv')
     plota_graficos('dados/tmp-processos-por-uf-geral.csv',
                    'graficos/consolidado.png',
-                   'Processos por UF de {} a {}'.format(min(anos), max(anos)),
+                   'Processos por UF - {} a {}'.format(min(anos), max(anos)),
                    y_lim=(0, 200000),
-                   total_de_processos=sum(tabela['processos']))
+                   total_de_processos=sum(tabela_consolidada['processos']))
     remove('dados/tmp-processos-por-uf-geral.csv')
     log('OK\n', date_and_time=False)
+    ufs = tabela_consolidada['uf']
+
+    log('Criando gráficos por ano...\n')
+    for info in tabelas:
+        log('  {}... '.format(info['ano']))
+        arquivo = 'dados/tmp-{}.csv'.format(info['ano'])
+        processos = {}
+        for registro in info['tabela'].to_list_of_dicts():
+            processos[registro['uf']] = registro['processos']
+        t = Table(headers=['uf', 'processos'])
+        for uf in ufs:
+            t.append((uf, processos[uf]))
+        t.write('csv', arquivo)
+        p = plota_graficos(arquivo, info['imagem'],
+                           'Processos por UF - ' + info['ano'],
+                           total_de_processos=info['total_de_processos'],
+                           y_lim=(0, 30000))
+        remove(arquivo)
+        log('OK\n', date_and_time=False)
     log('Done!\n')
 
-def gera_graficos_por_porte():
-    log('Calculando o número total de processos... ')
-    dados = {}
-    conteudo = []
-    for arquivo in sorted(glob('dados/????.csv')):
-        t = Table()
-        t.read('csv', arquivo)
-        for registro in t.to_list_of_dicts():
-            dados[registro['uf']] = registro['processos']
-        conteudo.append((arquivo, t[:]))
-    tabela_geral = Table(headers=['uf', 'processos'])
-    for uf, processos in dados.iteritems():
-        tabela_geral.append((uf, processos))
-    tabela_geral.order_by('processos', 'desc')
-    total_de_processos = float(sum(tabela_geral['processos']))
-
-    log('OK\n', date_and_time=False)
     log('Definindo portes das UFs... ')
-    grande_porte = [registro[0] for registro in tabela_geral[:4]]
-    del tabela_geral[:4]
-    for indice, registro in enumerate(tabela_geral.to_list_of_dicts()):
+    total_de_processos = float(sum(tabela_consolidada['processos']))
+    grande_porte = [registro[0] for registro in tabela_consolidada[:4]]
+    del tabela_consolidada[:4]
+    for indice, registro in enumerate(tabela_consolidada.to_list_of_dicts()):
         if registro['processos'] / total_de_processos <= 0.01:
             break
-    pequeno_porte = [registro[0] for registro in tabela_geral[indice:]]
-    del tabela_geral[indice:]
-    medio_porte = [registro[0] for registro in tabela_geral]
-    del tabela_geral
-
+    pequeno_porte = [registro[0] for registro in tabela_consolidada[indice:]]
+    del tabela_consolidada[indice:]
+    medio_porte = [registro[0] for registro in tabela_consolidada]
+    del tabela_consolidada
     log('OK\n', date_and_time=False)
+
     log('Separando portes por ano e gerando gráficos...\n')
-    for arquivo, registros in conteudo:
-        ano = arquivo.replace('dados/', '').replace('.csv', '')
-        log('  {}: '.format(ano))
-        t = Table(headers=['uf', 'processos'])
-        t.extend(registros)
+    pequeno_consolidado_uf = Counter()
+    medio_consolidado_uf = Counter()
+    grande_consolidado_uf = Counter()
+    consolidado_ano = Table(headers=['Ano', 'Pequeno Porte', u'Médio Porte',
+                                     'Grande Porte'])
+    for info in tabelas:
+        log('  {}: '.format(info['ano']))
+        t = info['tabela']
         total_de_processos = sum(t['processos'])
         tabela_grande_porte = Table(headers=t.headers)
         tabela_medio_porte = Table(headers=t.headers)
         tabela_pequeno_porte = Table(headers=t.headers)
+        dados = {}
         for registro in t.to_list_of_dicts():
-            if registro['uf'] in grande_porte:
-                tabela_grande_porte.append(registro)
-            elif registro['uf'] in medio_porte:
-                tabela_medio_porte.append(registro)
-            elif registro['uf'] in pequeno_porte:
-                tabela_pequeno_porte.append(registro)
-        tabela_pequeno_porte.order_by('processos', 'desc')
-        tabela_medio_porte.order_by('processos', 'desc')
-        tabela_grande_porte.order_by('processos', 'desc')
-        p = 'dados/tmp-pequeno-porte-{}.csv'.format(ano)
-        m = 'dados/tmp-medio-porte-{}.csv'.format(ano)
-        g = 'dados/tmp-grande-porte-{}.csv'.format(ano)
+            dados[registro['uf']] = registro['processos']
+        for uf in pequeno_porte:
+            tabela_pequeno_porte.append((uf, dados[uf]))
+        for uf in medio_porte:
+            tabela_medio_porte.append((uf, dados[uf]))
+        for uf in grande_porte:
+            tabela_grande_porte.append((uf, dados[uf]))
+        for registro in tabela_pequeno_porte.to_list_of_dicts():
+            pequeno_consolidado_uf[registro['uf']] += registro['processos']
+        for registro in tabela_medio_porte.to_list_of_dicts():
+            medio_consolidado_uf[registro['uf']] += registro['processos']
+        for registro in tabela_grande_porte.to_list_of_dicts():
+            grande_consolidado_uf[registro['uf']] += registro['processos']
+        consolidado_ano.append((info['ano'],
+                                sum(tabela_pequeno_porte['processos']),
+                                sum(tabela_medio_porte['processos']),
+                                sum(tabela_grande_porte['processos'])))
+        p = 'dados/tmp-pequeno-porte-{}.csv'.format(info['ano'])
+        m = 'dados/tmp-medio-porte-{}.csv'.format(info['ano'])
+        g = 'dados/tmp-grande-porte-{}.csv'.format(info['ano'])
         tabela_pequeno_porte.write('csv', p)
         tabela_medio_porte.write('csv', m)
         tabela_grande_porte.write('csv', g)
@@ -132,23 +141,67 @@ def gera_graficos_por_porte():
         nome_g = 'graficos/' + path.basename(g.replace('.csv', '.png').\
                                                replace('tmp-', ''))
         plota_graficos(p, nome_p,
-                       'Processos de {} - Pequeno Porte'.format(ano),
-                       y_lim=(0, 4000), total_de_processos=total_de_processos,
+                       'Processos de {} - Pequeno Porte'.format(info['ano']),
+                       y_lim=(0, 4000),
+                       total_de_processos=info['total_de_processos'],
                        y_lim_bar=(0, 3.5), titulo_bar='Percentual no ano')
         plota_graficos(m, nome_m,
-                       u'Processos de {} - Médio Porte'.format(ano),
-                       y_lim=(0, 12000), total_de_processos=total_de_processos,
+                       u'Processos de {} - Médio Porte'.format(info['ano']),
+                       y_lim=(0, 12000),
+                       total_de_processos=info['total_de_processos'],
                        y_lim_bar=(0, 12), titulo_bar='Percentual no ano')
         plota_graficos(g, nome_g,
-                       'Processos de {} - Grande Porte'.format(ano),
-                       y_lim=(0, 30000), total_de_processos=total_de_processos,
+                       'Processos de {} - Grande Porte'.format(info['ano']),
+                       y_lim=(0, 30000),
+                       total_de_processos=info['total_de_processos'],
                        y_lim_bar=(0, 25), titulo_bar='Percentual no ano')
         remove(p)
         remove(m)
         remove(g)
         log('OK\n', date_and_time=False)
+
+    log('Criando gráfico consolidado de portes... ')
+    consolidado_ano.write('csv', 'dados/tmp-porte-consolidado-ano.csv')
+    p = Plotter('dados/tmp-porte-consolidado-ano.csv', rows=4, cols=1,
+                width=1600, height=1200)
+    anos = [info['ano'] for info in tabelas]
+    range_anos = (min(anos), max(anos))
+    p.bar(x_column='Ano', legends=False,
+          title=u'Pequeno Porte ({} a {})'.format(*range_anos),
+          bar_width=0.5, y_columns=['Pequeno Porte'], colors=['r'])
+    p.bar(x_column='Ano', legends=False,
+          title=u'Médio Porte ({} a {})'.format(*range_anos),
+          bar_width=0.5, y_columns=[u'Médio Porte'], colors=['g'])
+    p.bar(x_column='Ano', legends=False,
+          title=u'Grande Porte ({} a {})'.format(*range_anos),
+          bar_width=0.5, y_columns=['Grande Porte'], colors=['b'])
+    p.bar(x_column='Ano', legends=True,
+          title=u'Todos os Portes ({} a {})'.format(*range_anos),
+          bar_width=0.5,
+          y_columns=['Pequeno Porte', u'Médio Porte', 'Grande Porte'],
+          colors=['r', 'g', 'b'])
+    p.save('graficos/consolidado-por-porte.png')
+    remove('dados/tmp-porte-consolidado-ano.csv')
+    log('OK\n', date_and_time=False)
     log('Done!\n')
 
+def gera_animacao():
+    # sudo aptitude install ffmpeg2theora
+    log('Creating slideshow... ')
+    slides = SlideShow(delay=2.05, size=(2000, 1200), fade_in=1, fade_out=1)
+    log('OK\n', date_and_time=False)
+
+    log('  Adding images... ')
+    slides.add_images('graficos/????.png', 'graficos/consolidado.png')
+    log('OK\n', date_and_time=False)
+
+    log('  Creating images... ')
+    slides.create_images()
+    log('OK\n', date_and_time=False)
+
+    log('Rendering video... ')
+    slides.render('graficos/processos-por-uf')
+    log('OK\n', date_and_time=False)
 
 if __name__ == '__main__':
     try:
@@ -156,6 +209,5 @@ if __name__ == '__main__':
     except OSError:
         pass
     mkdir('graficos')
-
-    gera_graficos_por_ano()
-    gera_graficos_por_porte()
+    gera_graficos()
+    gera_animacao()

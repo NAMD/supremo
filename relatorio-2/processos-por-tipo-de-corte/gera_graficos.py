@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from os import remove, mkdir
+from os import remove, mkdir, path
 from shutil import rmtree
 from glob import glob
 from time import strftime
@@ -22,7 +22,7 @@ log('Normalizando dados...')
 table = Table(headers=['UF', u'Ordinária', 'Constitucional',
                        'Recursal de Massa', 'Total'])
 for arquivo in glob('dados/*.csv'):
-    uf = arquivo.replace('.csv', '')
+    uf = path.basename(arquivo).replace('.csv', '')
     t = Table()
     t.read('csv', arquivo)
     data = {'UF': uf, 'Total': 0}
