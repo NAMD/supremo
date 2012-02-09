@@ -3,7 +3,7 @@
 
 from sys import stdout
 from time import strftime
-from os import mkdir, remove, path
+from os import mkdir, path
 from shutil import rmtree
 from glob import glob
 from collections import Counter
@@ -89,23 +89,23 @@ def gera_graficos():
     for item in processos.iteritems():
         tabela_consolidada.append(item)
     tabela_consolidada.order_by('processos', 'desc')
-    tabela_consolidada.write('csv', 'dados/tmp-processos-por-uf-geral.csv')
-    plota_graficos('dados/tmp-processos-por-uf-geral.csv',
+    arquivo = 'dados-consolidados/processos-por-uf-geral.csv'
+    tabela_consolidada.write('csv', arquivo)
+    plota_graficos(arquivo,
                    'graficos/consolidado.png',
                    'Processos por UF - {} a {}'.format(min(anos), max(anos)),
                    y_lim=(0, 200000),
                    total_de_processos=sum(tabela_consolidada['processos']))
-    remove('dados/tmp-processos-por-uf-geral.csv')
 
     tabela_por_regiao = Table(headers=['regiao', 'processos'])
     for item in processos_por_regiao.iteritems():
         tabela_por_regiao.append(item)
-    tabela_por_regiao.write('csv', 'dados/tmp-processos-por-regiao.csv')
-    p = Plotter('dados/tmp-processos-por-regiao.csv')
+    arquivo = 'dados-consolidados/processos-por-regiao.csv'
+    tabela_por_regiao.write('csv', arquivo)
+    p = Plotter(arquivo)
     p.pie('processos', 'regiao',
           title=u'Processos por região geográfica ({} a {})'.format(*range_anos))
     p.save('graficos/processos-por-regiao.png')
-    remove('dados/tmp-processos-por-regiao.csv')
 
     log('OK\n', date_and_time=False)
     ufs = tabela_consolidada['uf']
@@ -113,7 +113,7 @@ def gera_graficos():
     log('Criando gráficos por ano...\n')
     for info in tabelas:
         log('  {}... '.format(info['ano']))
-        arquivo = 'dados/tmp-{}.csv'.format(info['ano'])
+        arquivo = 'dados-consolidados/{}.csv'.format(info['ano'])
         processos = {}
         for registro in info['tabela'].to_list_of_dicts():
             processos[registro['uf']] = registro['processos']
@@ -125,7 +125,6 @@ def gera_graficos():
                            'Processos por UF - ' + info['ano'],
                            total_de_processos=info['total_de_processos'],
                            y_lim=(0, 30000))
-        remove(arquivo)
         log('OK\n', date_and_time=False)
     log('Done!\n')
 
@@ -174,18 +173,15 @@ def gera_graficos():
                                 sum(tabela_pequeno_porte['processos']),
                                 sum(tabela_medio_porte['processos']),
                                 sum(tabela_grande_porte['processos'])))
-        p = 'dados/tmp-pequeno-porte-{}.csv'.format(info['ano'])
-        m = 'dados/tmp-medio-porte-{}.csv'.format(info['ano'])
-        g = 'dados/tmp-grande-porte-{}.csv'.format(info['ano'])
+        p = 'dados-consolidados/pequeno-porte-{}.csv'.format(info['ano'])
+        m = 'dados-consolidados/medio-porte-{}.csv'.format(info['ano'])
+        g = 'dados-consolidados/grande-porte-{}.csv'.format(info['ano'])
+        nome_p = 'graficos/' + path.basename(p.replace('.csv', '.png'))
+        nome_m = 'graficos/' + path.basename(m.replace('.csv', '.png'))
+        nome_g = 'graficos/' + path.basename(g.replace('.csv', '.png'))
         tabela_pequeno_porte.write('csv', p)
         tabela_medio_porte.write('csv', m)
         tabela_grande_porte.write('csv', g)
-        nome_p = 'graficos/' + path.basename(p.replace('.csv', '.png').\
-                                               replace('tmp-', ''))
-        nome_m = 'graficos/' + path.basename(m.replace('.csv', '.png').\
-                                               replace('tmp-', ''))
-        nome_g = 'graficos/' + path.basename(g.replace('.csv', '.png').\
-                                               replace('tmp-', ''))
         plota_graficos(p, nome_p,
                        'Processos de {} - Pequeno Porte'.format(info['ano']),
                        y_lim=(0, 4000),
@@ -201,15 +197,12 @@ def gera_graficos():
                        y_lim=(0, 30000),
                        total_de_processos=info['total_de_processos'],
                        y_lim_bar=(0, 25), titulo_bar='Percentual no ano')
-        remove(p)
-        remove(m)
-        remove(g)
         log('OK\n', date_and_time=False)
 
     log('Criando gráfico consolidado de portes... ')
-    consolidado_ano.write('csv', 'dados/tmp-porte-consolidado-ano.csv')
-    p = Plotter('dados/tmp-porte-consolidado-ano.csv', rows=4, cols=1,
-                width=1600, height=1200)
+    arquivo = 'dados-consolidados/processos-por-porte-consolidado-por-ano.csv'
+    consolidado_ano.write('csv', arquivo)
+    p = Plotter(arquivo, rows=4, cols=1, width=1600, height=1200)
     p.bar(x_column='Ano', legends=False,
           title=u'Pequeno Porte ({} a {})'.format(*range_anos),
           bar_width=0.5, y_columns=['Pequeno Porte'], colors=['r'])
@@ -225,7 +218,6 @@ def gera_graficos():
           y_columns=['Pequeno Porte', u'Médio Porte', 'Grande Porte'],
           colors=['r', 'g', 'b'])
     p.save('graficos/consolidado-por-porte.png')
-    remove('dados/tmp-porte-consolidado-ano.csv')
     log('OK\n', date_and_time=False)
     log('Done!\n')
 
@@ -247,11 +239,16 @@ def gera_animacao():
     slides.render('graficos/processos-por-uf')
     log('OK\n', date_and_time=False)
 
-if __name__ == '__main__':
+def deleta_e_cria_diretorio(diretorio):
     try:
-        rmtree('graficos')
+        rmtree(diretorio)
     except OSError:
         pass
-    mkdir('graficos')
+    mkdir(diretorio)
+
+
+if __name__ == '__main__':
+    deleta_e_cria_diretorio('graficos')
+    deleta_e_cria_diretorio('dados-consolidados')
     gera_graficos()
     gera_animacao()
