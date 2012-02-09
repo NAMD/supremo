@@ -254,4 +254,4 @@ if __name__ == '__main__':
         pass
     mkdir('graficos')
     gera_graficos()
-    #gera_animacao()
+    gera_animacao()
