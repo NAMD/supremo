@@ -1,4 +1,4 @@
-"GEOCODIG_M","UF","SIGLA","NOME_MUNIC","REGIãO","MESORREGIã","NOME_MESO","MICRORREGI","NOME_MICRO"
+"geocodig_m","id_uf","uf","nome","regiao","id_mesorregiao","mesorregiao","id_microrregiao","microrregiao"
 "1100015","11","RO","Alta Floresta D'Oeste","Norte","1102","Leste Rondoniense","11006","Cacoal"
 "1100023","11","RO","Ariquemes","Norte","1102","Leste Rondoniense","11003","Ariquemes"
 "1100031","11","RO","Cabixi","Norte","1102","Leste Rondoniense","11008","Colorado do Oeste"
