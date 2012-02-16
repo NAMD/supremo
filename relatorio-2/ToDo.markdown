@@ -42,7 +42,6 @@ Organização de Arquivos e Diretórios
   - `tipo_de_corte_por_classe` (relacionado a `processos-por-tipo-de-corte`)
   - `tipo_de_corte_por_estado` (mesmo acima)
   - `processos_por_data_autuacao.csv` ?
-  - `top_litigantes_por_ano` ?
   - `top_litigantes_por_uf` ?
   - `top_litigantes_por_uf_ano` ?
 - [Daniel] Juntar arquivo `class_mapping.py` com o que faz a query e grava os
