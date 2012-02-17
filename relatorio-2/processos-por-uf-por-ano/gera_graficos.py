@@ -78,11 +78,16 @@ def gera_graficos():
     log('Criando gráfico consolidado... ')
     processos = Counter()
     processos_por_regiao = Counter()
+    tabela_uf = {}
     for info in tabelas:
         for registro in info['tabela'].to_list_of_dicts():
-            processos[registro['uf']] += registro['processos']
-            if registro['uf'] in regioes:
-                regiao = regioes[registro['uf']]
+            uf = registro['uf']
+            processos[uf] += registro['processos']
+            if uf not in tabela_uf:
+                tabela_uf[uf] = Table(headers=['ano', 'processos'])
+            tabela_uf[uf].append((info['ano'], registro['processos']))
+            if uf in regioes:
+                regiao = regioes[uf]
                 processos_por_regiao[regiao] += registro['processos']
 
     tabela_consolidada = Table(headers=['uf', 'processos'])
@@ -106,11 +111,49 @@ def gera_graficos():
     p.pie('processos', 'regiao',
           title=u'Processos por região geográfica ({} a {})'.format(*range_anos))
     p.save('graficos/processos-por-regiao.png')
-
     log('OK\n', date_and_time=False)
-    ufs = tabela_consolidada['uf']
+
+    log('Criando gráficos por UF...')
+    pib_por_ano = {}
+    tabela_pib = Table()
+    tabela_pib.read('csv', '../../dados-externos/pib-por-uf-por-ano.csv')
+    for r in tabela_pib.to_list_of_dicts():
+        if r['uf'] not in pib_por_ano:
+            pib_por_ano[r['uf']] = {}
+        pib_por_ano[r['uf']][r['ano']] = r['pib']
+    pea_por_ano = {}
+    tabela_pea = Table()
+    tabela_pea.read('csv', '../../dados-externos/populacao-economicamente-ativa-por-uf-por-ano.csv')
+    for r in tabela_pea.to_list_of_dicts():
+        if r['uf'] not in pea_por_ano:
+            pea_por_ano[r['uf']] = {}
+        pea_por_ano[r['uf']][r['ano']] = r['populacao']
+    for uf, tabela in tabela_uf.iteritems():
+        arquivo = 'dados-consolidados/por-uf-{}.csv'.format(uf)
+        tabela.write('csv', arquivo)
+        p = Plotter(arquivo, rows=3, cols=1)
+        p.scatter(x_column='ano', title=u'Processos por Ano - {}'.format(uf),
+                  y_label=u'Número de processos', labels=False, legends=None,
+                  y_lim=(0, None))
+        backup = []
+        for r in p.data:
+            backup.append(r[1])
+            r[1] = r[1] / (pib_por_ano[uf][r[0]] / 1000000.0)
+        p.scatter(x_column='ano', y_label=u'Processos / PIB (milhões)',
+                  x_label='', legends=None, y_lim=(0, None))
+        pea_2001 = float(pea_por_ano[uf][2001])
+        pea_2002 = pea_por_ano[uf][2002]
+        pea_por_ano[uf][2000] = pea_2001 / (pea_2002 / pea_2001)
+        for indice, r in enumerate(p.data):
+            r[1] = backup[indice] / (pea_por_ano[uf][r[0]] / 1000000.0)
+        p.scatter(x_column='ano',
+                  y_label=u'Processos / PEA (milhões)',
+                  x_label='', legends=None, y_lim=(0, None))
+        p.save('graficos/por-uf-{}.png'.format(uf))
+    log('OK\n', date_and_time=False)
 
     log('Criando gráficos por ano...\n')
+    ufs = tabela_consolidada['uf']
     for info in tabelas:
         log('  {}... '.format(info['ano']))
         arquivo = 'dados-consolidados/{}.csv'.format(info['ano'])
@@ -251,4 +294,4 @@ if __name__ == '__main__':
     deleta_e_cria_diretorio('graficos')
     deleta_e_cria_diretorio('dados-consolidados')
     gera_graficos()
-    gera_animacao()
+    #gera_animacao()

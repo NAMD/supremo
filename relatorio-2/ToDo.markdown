@@ -2,34 +2,6 @@ To Do
 =====
 
 
-Gráficos para Segundo Relatório
--------------------------------
-
-- [Álvaro] Processos por estado por ano / População Economicamente Ativa
-- [Álvaro] Processos por estado por ano / PIB
-- [Álvaro] Processos por estado por ano / PIB per capita
-- [Álvaro] Processos por estado por ano / número de advogados
-- Top litigantes: numero de juízes, numero de advogados, PIB, indice de
-  litigiosidade do estado (pegar dados do Justiça em Números)
-- Mapa político
-- [OK] Por ano por estado
-- [OK] Por ano por estado por porte (grande = top4, pequeno = menos de 1%,
-  médio = outros)
-- [OK] Gráfico de barras por tipo de corte
-- [OK] Processos por categoria do Direito (em radar)
-
-
-Enviar para Pedro:
-- [OK] Tabela com percentual dos processos por estado, de 2000 a 2009 (agregado)
-  sen-code/relatorio-2/processos-por-uf-por-an/oprocessos-por-uf-consolidado-2000-a-2009.csv
-- Processos por UF em ordem FIXA do TOTAL
-- Vídeo de 2000 a 2009 dos gráficos que mostram número de processos
-  por estado
-- Gráfico que conste a evolução ano a ano dos portes (provavelmente serão 3
-  gráficos, um para cada porte)
-- Gráfico radar ou treemap com categoria de processo
-
-
 Organização de Arquivos e Diretórios
 ------------------------------------
 
