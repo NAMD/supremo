@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from os import remove, mkdir
+from os import mkdir, path
 from shutil import rmtree
 from glob import glob
 from time import strftime
@@ -12,17 +12,21 @@ from plotter import Plotter
 def log(text):
     print('[{}] {}'.format(strftime('%Y-%m-%d %H:%M:%S'), text))
 
-try:
-    rmtree('graficos')
-except OSError:
-    pass
-mkdir('graficos')
+def deleta_e_cria_diretorio(diretorio):
+    try:
+        rmtree(diretorio)
+    except OSError:
+        pass
+    mkdir(diretorio)
+
+deleta_e_cria_diretorio('graficos')
+deleta_e_cria_diretorio('dados-consolidados')
 
 log('Normalizando dados...')
 table = Table(headers=['UF', u'Ordinária', 'Constitucional',
                        'Recursal de Massa', 'Total'])
 for arquivo in glob('dados/*.csv'):
-    uf = arquivo.replace('.csv', '')
+    uf = path.basename(arquivo).replace('.csv', '')
     t = Table()
     t.read('csv', arquivo)
     data = {'UF': uf, 'Total': 0}
@@ -32,10 +36,11 @@ for arquivo in glob('dados/*.csv'):
     table.append(data)
 table.order_by('Total', 'desc')
 del table['Total']
-table.write('csv', 'dados/tmp-processos-por-tipo-de-corte.csv')
+arquivo = 'dados-consolidados/processos-por-tipo-de-corte.csv'
+table.write('csv', arquivo)
 
 log('Plotando gráficos...')
-p = Plotter('dados/tmp-processos-por-tipo-de-corte.csv', width=1600,
+p = Plotter(arquivo, width=1600,
             height=1200, rows=4, cols=1)
 p.bar(x_column='UF', title=u'Processos - Recursal de Massa (todos os anos)',
       bar_width=0.5, y_columns=['Recursal de Massa'], colors=['r'])
@@ -48,5 +53,4 @@ p.bar(x_column='UF', title=u'Processos - todas as cortes (todos os anos)',
       y_columns=['Recursal de Massa', u'Ordinária', 'Constitucional'],
       colors=['r', 'g', 'b'])
 p.save('graficos/processos-por-tipo-de-corte.png')
-remove('dados/tmp-processos-por-tipo-de-corte.csv')
 log('Done!')
