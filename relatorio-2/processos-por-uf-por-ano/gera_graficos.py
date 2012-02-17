@@ -9,14 +9,7 @@ from glob import glob
 from collections import Counter
 from outputty import Table
 from plotter import Plotter
-
-
-def log(text, date_and_time=True):
-    if date_and_time:
-        stdout.write('[%s] %s' % (strftime('%Y-%m-%d %H:%M:%S'), text))
-    else:
-        stdout.write(text)
-    stdout.flush()
+from SENutils import log
 
 def plota_graficos(arquivo, imagem, titulo, total_de_processos,
                    y_lim=(0, 160000), y_lim_bar=(0, 30), titulo_2='',

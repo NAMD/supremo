@@ -7,6 +7,8 @@ Created on Jan 5, 2012
 import MySQLdb
 import csv
 import os
+from sys import stdout
+from time import strftime
 ###############################################################################
 def senDbConn(name="STF_O", flagRemoteSSH=False):
     if flagRemoteSSH:
@@ -54,6 +56,7 @@ def load_csv(filename, lines=None, encoding=None):
     myList = []
     if lines:
         for x in range(lines):
+            x = None
             try: line = reader.next()
             except: break
             myList.append(line)
@@ -73,6 +76,13 @@ def write_to_csv(location, name, columnTitles, data):
     writer = csv.writer(open(location+name, 'wb'))
     writer.writerow( columnTitles )
     writer.writerows(data)
+###############################################################################
+def log(text, date_and_time=True):
+    if date_and_time:
+        stdout.write('[%s] %s' % (strftime('%Y-%m-%d %H:%M:%S'), text))
+    else:
+        stdout.write(text)
+    stdout.flush()
 ###############################################################################
 # INSTANTIATING INLINE OBJECTS IN PYTHON::::
 # obj = type('obj', (object,), {'propertyName' : 'propertyValue'})

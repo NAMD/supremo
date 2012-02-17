@@ -16,7 +16,7 @@ rootRepoByState = {}
 def blah(item):
     return item[1]
 def run():
-    resultSet = load_csv('csv/misc/assuntoCompletoPorEstado.csv')
+    resultSet = load_csv('pre-dados/todos_os_assuntos_da_raiz_a_folha.csv')
     map(updateCount, resultSet[1:])
     for state,bystateitems in rootRepoByState.items():
         write_to_csv('csv/misc/estados/',state+'_FINALassunto.csv', ['COLUNA A','COLUNA B' ], bystateitems.items())
