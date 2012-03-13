@@ -134,6 +134,24 @@ def gera_graficos():
                   legends=None)
         p.save('graficos/processos-juizados-especiais-por-regiao-{}.png'.format(regiao))
 
+    log('Criando gráfico de juizados especiais ativos... ')
+    arquivo = 'dados-consolidados/juizados-especiais-ativos.csv'
+    titulo = 'Juizados Especiais Ativos'
+    tabela_ativos = Table()
+    tabela_ativos.read('csv', 'dados/juizados-especiais-ativos.csv')
+    outros = 0
+    for indice, registro in enumerate(tabela_ativos):
+        processos = registro[1]
+        if processos < 50:
+            outros += processos
+            del tabela_ativos[indice]
+    tabela_ativos.append(('Outros', outros))
+    tabela_ativos.write('csv', arquivo)
+    p = Plotter(arquivo)
+    p.pie(tabela_ativos.headers[1], tabela_ativos.headers[0], titulo)
+    p.save('graficos/juizados-especiais-ativos.png')
+    log('OK\n', date_and_time=False)
+
     log('Done!\n')
 
 def deleta_e_cria_diretorio(diretorio):
