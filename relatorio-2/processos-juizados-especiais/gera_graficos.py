@@ -139,16 +139,19 @@ def gera_graficos():
     titulo = 'Juizados Especiais Ativos'
     tabela_ativos = Table()
     tabela_ativos.read('csv', 'dados/juizados-especiais-ativos.csv')
+    tabela_ativos_2 = Table(headers=tabela_ativos.headers)
     outros = 0
-    for indice, registro in enumerate(tabela_ativos):
+    for registro in tabela_ativos:
         processos = registro[1]
         if processos < 50:
             outros += processos
-            del tabela_ativos[indice]
-    tabela_ativos.append(('Outros', outros))
-    tabela_ativos.write('csv', arquivo)
-    p = Plotter(arquivo)
-    p.pie(tabela_ativos.headers[1], tabela_ativos.headers[0], titulo)
+        else:
+            tabela_ativos_2.append(registro)
+    tabela_ativos_2.append(('Outros', outros))
+    tabela_ativos_2.order_by(tabela_ativos_2.headers[1], 'desc')
+    tabela_ativos_2.write('csv', arquivo)
+    p = Plotter(arquivo, width=1600, height=1200)
+    p.pie(tabela_ativos_2.headers[1], tabela_ativos_2.headers[0], titulo)
     p.save('graficos/juizados-especiais-ativos.png')
     log('OK\n', date_and_time=False)
 
