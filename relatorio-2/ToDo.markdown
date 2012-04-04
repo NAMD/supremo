@@ -1,6 +1,13 @@
 To Do
 =====
 
+Por Estado
+----------
+
+- JEC
+- Por Categoria
+- Por UF por ano
+
 
 Organização de Arquivos e Diretórios
 ------------------------------------

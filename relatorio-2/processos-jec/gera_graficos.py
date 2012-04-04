@@ -7,6 +7,7 @@ from os import mkdir, path
 from shutil import rmtree
 from collections import Counter
 from glob import glob
+from numpy import array
 from outputty import Table
 from plotter import Plotter
 
@@ -181,10 +182,8 @@ def gera_graficos_jec_por_ano():
 def gera_graficos_por_regiao():
     log(u'Criando gráficos por regiao...\n')
     processos_regiao = {}
-    for arquivo_uf in glob('dados/*'):
+    for arquivo_uf in glob('dados/??.csv'):
         uf = arquivo_uf.split('/')[-1].split('.')[0]
-        if uf == 'Brasil':
-            continue
         log('  {}\n'.format(uf))
         regiao = regioes[uf]
         if regiao not in processos_regiao:
@@ -210,9 +209,38 @@ def gera_graficos_por_regiao():
 
     log(' Done!\n')
 
+def gera_grafico_indice():
+    tabela_jec_consolidada = Table(headers=['uf', 'processos'])
+    for arquivo_uf in glob('dados/??.csv'):
+        uf = arquivo_uf.split('/')[-1].split('.')[0]
+        tabela = Table()
+        tabela.read('csv', arquivo_uf)
+        tabela_jec_consolidada.append((uf, sum(tabela['Processos'])))
+    tabela_total = Table()
+    tabela_total.read('csv', 'dados/processos-por-uf-2000-2009.csv')
+    tabela_jec_consolidada.order_by('uf')
+    tabela_total.order_by('uf')
+    tabela_indice = Table(headers=['uf', 'processos-jec', 'total-processos',
+                                   'indice'])
+    jec = tabela_jec_consolidada['processos']
+    total = [float(x) for x in tabela_total['processos']]
+    tabela_total['processos-jec'] = jec
+    tabela_total['total-processos'] = total
+    del tabela_total['processos']
+    tabela_total['indice'] = list((array(jec) / array(total)) * 100)
+    tabela_total.order_by('indice', 'desc')
+    tabela_total.write('csv', 'dados-consolidados/indice.csv')
+    p = Plotter('dados-consolidados/indice.csv')
+    p.bar(title=u'Índice (JEC / Total de Processos) - 2000 a 2009',
+          x_column='uf', y_columns=['indice'], legends=None,
+          y_label=u'Índice (percentual)')
+    p.save('graficos/indice.png')
+
+
 def gera_graficos():
-    gera_graficos_jec_por_ano()
-    gera_graficos_por_regiao()
+    #gera_graficos_jec_por_ano()
+    #gera_graficos_por_regiao()
+    gera_grafico_indice()
 
 
 if __name__ == '__main__':
