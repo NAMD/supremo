@@ -68,7 +68,7 @@ for item in consolidado.iteritems():
 tabela_geral.order_by('area', 'asc')
 tabela_geral.write('csv', 'dados/tmp-consolidado.csv')
 p = Plotter('dados/tmp-consolidado.csv', width=1400, height=1050)
-p.radar_area(values_column='processos', labels_column='area',
+p.radar(values_column='processos', labels_column='area',
              title=u'Processos por Área - Brasil')
 p.save('graficos/processos-por-categoria-brasil.png')
 remove('dados/tmp-consolidado.csv')

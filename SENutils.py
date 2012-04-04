@@ -44,7 +44,68 @@ STATE_CODES = {
         'São Paulo':'SP',
         'Sergipe':'SE',
         'Tocantins':'TO',
-        }
+}
+
+STATE_REGIONS ={
+        'Acre':'Norte',
+        'Alagoas':'Nordeste',
+        'Amapá':'Norte',
+        'Amazonas':'Norte',
+        'Bahia' :'Nordeste',
+        'Ceará':'Nordeste',
+        'Distrito Federal' :'Centro-Oeste',
+        'Espírito Santo':'Sudeste',
+        'Goiás':'Centro-Oeste',
+        'Maranhão':'Nordeste',
+        'Mato Grosso':'Centro-Oeste',
+        'Mato Grosso do Sul':'Centro-Oeste',
+        'Minas Gerais':'Sudeste',
+        'Pará':'Norte',
+        'Paraíba':'Nordeste',
+        'Paraná':'Sul',
+        'Pernambuco':'Nordeste',
+        'Piauí':'Nordeste',
+        'Rio de Janeiro':'Sudeste',
+        'Rio Grande do Norte':'Nordeste',
+        'Rio Grande do Sul':'Sul',
+        'Rondônia':'Norte',
+        'Roraima':'Norte',
+        'Santa Catarina':'Sul',
+        'São Paulo':'Sudeste',
+        'Sergipe':'Nordeste',
+        'Tocantins':'Norte',
+}
+
+STATE_KEYS = {
+        'AC':2,
+        'AL':4,
+        'AM':8,
+        'AP':6,
+        'BA':10,
+        'CE':12,
+        'DF':14,
+        'ES':16,
+        'GO':20,
+        'MA':22,
+        'MG':28,
+        'MS':26,
+        'MT':24,
+        'PA':30,
+        'PB':32,
+        'PE':36,
+        'PI':38,
+        'PR':34,
+        'RJ':7,
+        'RN':40,
+        'RO':46,
+        'RR':48,
+        'RS':42,
+        'SC':50,
+        'SE':54,
+        'SP':52,
+        'TO':56
+}
+
 ###############################################################################
 def load_csv(filename, lines=None, encoding=None):
     """
