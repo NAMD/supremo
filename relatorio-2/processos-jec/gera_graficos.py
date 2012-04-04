@@ -154,21 +154,65 @@ def plota_jec_por_ano(referencia, titulo):
           legend_box=(0, 1.35), legend_prop={'size': 8})
     p.save(imagem_top5)
 
+def plota_jec(referencia, titulo):
+    nova_referencia = referencia.replace('/', '-')
+    arquivo = 'dados/{}.csv'.format(referencia)
+    t = Table()
+    t.read('csv', arquivo)
+    anos = t['Ano']
+    for ano in set(range(2000, 2010)) - set(anos):
+        t.append((ano, 0))
+    t.order_by('Ano')
+    t.write('csv', arquivo)
+    imagem = 'graficos/{}.png'.format(nova_referencia)
+    p = Plotter(arquivo)
+    p.scatter(x_column='Ano', title=titulo, y_label=u'Número de Processos',
+              legends=None, y_lim=(0, None))
+    p.save(imagem)
+
 def gera_graficos_jec_por_ano():
     log(u'Criando gráficos por ano...\n')
-    log('  Brasil\n')
-    plota_jec_por_ano('processos-jec-brasil',
-                      u'Top 5 Processos JEC (2000 a 2009) - Brasil')
-    for arquivo_uf in glob('dados/processos-jec-por-uf-por-ano/*'):
-        uf = arquivo_uf.split('/')[-1]
+    for arquivo_uf in glob('dados/*'):
+        uf = arquivo_uf.split('/')[-1].split('.')[0]
         log('  {}\n'.format(uf))
-        plota_jec_por_ano('processos-jec-por-uf-por-ano/' + uf,
-                          u'Top 5 Processos JEC (2000 a 2009) - ' + uf)
+        plota_jec(uf, u'Processos JEC - ' + uf)
+    log(' Done!\n')
+
+def gera_graficos_por_regiao():
+    log(u'Criando gráficos por regiao...\n')
+    processos_regiao = {}
+    for arquivo_uf in glob('dados/*'):
+        uf = arquivo_uf.split('/')[-1].split('.')[0]
+        if uf == 'Brasil':
+            continue
+        log('  {}\n'.format(uf))
+        regiao = regioes[uf]
+        if regiao not in processos_regiao:
+            processos_regiao[regiao] = Counter()
+        tabela = Table()
+        tabela.read('csv', arquivo_uf)
+        for registro in tabela.to_list_of_dicts():
+            processos_regiao[regiao][registro['Ano']] += registro['Processos']
+    for regiao, dados in processos_regiao.iteritems():
+        log('  {}\n'.format(regiao))
+        arquivo = 'dados-consolidados/{}.csv'.format(regiao)
+        titulo = u'Processos JEC - {}'.format(regiao.capitalize())
+        imagem = 'graficos/{}.png'.format(regiao)
+        for ano_faltante in set(range(2000, 2010)) - set(dados.keys()):
+            dados[ano_faltante] = 0
+        tabela_regiao = Table(headers=['Ano', 'Processos'])
+        tabela_regiao.extend(dados.iteritems())
+        tabela_regiao.write('csv', arquivo)
+        p = Plotter(arquivo)
+        p.scatter('Ano', title=titulo, y_label=u'Número de Processos',
+                  legends=None, y_lim=(0, None))
+        p.save(imagem)
+
     log(' Done!\n')
 
 def gera_graficos():
-    gera_graficos_jec_top()
     gera_graficos_jec_por_ano()
+    gera_graficos_por_regiao()
 
 
 if __name__ == '__main__':
