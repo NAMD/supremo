@@ -65,12 +65,10 @@ def plota_graficos(arquivo, imagem, titulo, total_de_processos,
 def gera_graficos():
     log('Coletando dados... ')
     tabelas = []
-    anos = []
     for arquivo in sorted(glob('dados/????.csv')):
         tabela = Table()
         tabela.read('csv', arquivo)
         ano = path.basename(arquivo).split('-')[-1].split('.')[0]
-        anos.append(int(ano))
         imagem = 'graficos/' + path.basename(arquivo.replace('.csv', '.png'))
         tabelas.append({'ano': ano, 'imagem': imagem,
                         'total_de_processos': sum(tabela['processos']),
@@ -298,4 +296,4 @@ if __name__ == '__main__':
     deleta_e_cria_diretorio('graficos')
     deleta_e_cria_diretorio('dados-consolidados')
     gera_graficos()
-    #gera_animacao()
+    gera_animacao()

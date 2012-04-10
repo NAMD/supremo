@@ -52,7 +52,7 @@ for arquivo in sorted(glob('dados/*.csv')):
 consolidado = Counter()
 log('Plotando...')
 for arquivo in sorted(glob('dados/*.csv')):
-    estado = arquivo.split('-')[-1].replace('.csv', '')
+    estado = arquivo.split('/')[-1].split('.')[0]
     log('  {}'.format(estado))
     p = Plotter(arquivo, width=1400, height=1050)
     for registro in p.data.to_list_of_dicts():
