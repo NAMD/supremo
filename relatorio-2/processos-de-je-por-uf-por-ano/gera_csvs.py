@@ -7,6 +7,21 @@ from SENutils import senDbConn
 from SENutils import write_to_csv
 from SENutils import STATE_KEYS
 ###################################################################################################
+query_desagregando_por_juizado = """select dsc_origem as 'origem', count(PROCESSO.seq_objeto_incidente) as 'num de processos' 
+from ORIGEM, HISTORICO_PROCESSO_ORIGEM, PROCESSO
+where HISTORICO_PROCESSO_ORIGEM.cod_procedencia = %s
+and HISTORICO_PROCESSO_ORIGEM.cod_origem = ORIGEM.cod_origem
+and PROCESSO.seq_objeto_incidente = HISTORICO_PROCESSO_ORIGEM.seq_objeto_incidente
+and (dsc_origem like '%%esp.%%' OR dsc_origem like '%%espec%%' OR dsc_origem like '%%peq%%')
+and dsc_origem not like '%%especializad%%'
+and ORIGEM.cod_origem <> 1277
+and ORIGEM.cod_origem <> 1521
+and year(dat_autuacao) >= %s
+and year(dat_autuacao) <= %s
+group by dsc_origem
+order by count(PROCESSO.seq_objeto_incidente) desc
+"""
+###################################################################################################
 query = """select year(dat_autuacao) as 'Ano', count(PROCESSO.seq_objeto_incidente) as 'Processos' 
 from ORIGEM, HISTORICO_PROCESSO_ORIGEM, PROCESSO
 where HISTORICO_PROCESSO_ORIGEM.cod_procedencia = %s
