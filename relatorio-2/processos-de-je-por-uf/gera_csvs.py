@@ -7,7 +7,8 @@ from SENutils import senDbConn
 from SENutils import write_to_csv
 from SENutils import STATE_KEYS
 ###################################################################################################
-query = """select year(dat_autuacao) as 'Ano', count(PROCESSO.seq_objeto_incidente) as 'Processos' 
+# pego os totais acumulados (para os anos 2000 a 2009) de processos JEC, por estado 
+query_JEC_UF = """SELECT HISTORICO_PROCESSO_ORIGEM.cod_procedencia as 'UF', select count(PROCESSO.seq_objeto_incidente) as 'Processos' 
 from ORIGEM, HISTORICO_PROCESSO_ORIGEM, PROCESSO
 where HISTORICO_PROCESSO_ORIGEM.cod_procedencia = %s
 and HISTORICO_PROCESSO_ORIGEM.cod_origem = ORIGEM.cod_origem
@@ -18,9 +19,19 @@ and ORIGEM.cod_origem <> 1277
 and ORIGEM.cod_origem <> 1521
 and year(dat_autuacao) >= %s
 and year(dat_autuacao) <= %s
-group by year(dat_autuacao)
-order by year(dat_autuacao)
+order by count(PROCESSO.seq_objeto_incidente) desc
 """
+###################################################################################################
+# pego os totais acumulados (para os anos 2000 a 2009) de processos, por estado 
+query_TOT_UF = """SELECT HISTORICO_PROCESSO_ORIGEM.cod_procedencia as 'UF', select count(PROCESSO.seq_objeto_incidente) as 'Processos' 
+from HISTORICO_PROCESSO_ORIGEM, PROCESSO
+where HISTORICO_PROCESSO_ORIGEM.cod_procedencia = %s
+and PROCESSO.seq_objeto_incidente = HISTORICO_PROCESSO_ORIGEM.seq_objeto_incidente
+and year(dat_autuacao) >= %s
+and year(dat_autuacao) <= %s
+order by count(PROCESSO.seq_objeto_incidente) desc
+"""
+###################################################################################################
 START_YEAR = 2000
 END_YEAR = 2009
 ###################################################################################################
@@ -29,7 +40,8 @@ def run():
     cursor = db.cursor()
     
     for state in STATE_KEYS.items():
-        query_pronta = query % (state[1], str(START_YEAR), str(END_YEAR))
+        query_JEC_pronta = query_JEC_UF % (state[1], str(START_YEAR), str(END_YEAR))
+        query_tot_pronta = query_TOT_UF % (state[1], str(START_YEAR), str(END_YEAR))
         cursor.execute(query_pronta)
         result_tup = cursor.fetchall()
         result_list = list(result_tup)
@@ -39,7 +51,8 @@ def run():
         for item in result_list:
             if item[0] != years[counter]:
                 result_list.insert(counter, (long(years[counter]), long(0)) )
-            counter++
+            counter+=1
+            
         write_to_csv('dados/', state[0]+'.csv', ('Ano','Processos'), result_tup)
 #        for year in range(START_YEAR,END_YEAR+1):
 #            print year

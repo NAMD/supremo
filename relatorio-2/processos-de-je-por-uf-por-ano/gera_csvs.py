@@ -54,7 +54,7 @@ def run():
         for item in result_list:
             if item[0] != years[counter]:
                 result_list.insert(counter, (long(years[counter]), long(0)) )
-            counter++
+            counter+=1
         write_to_csv('dados/', state[0]+'.csv', ('Ano','Processos'), result_tup)
 #        for year in range(START_YEAR,END_YEAR+1):
 #            print year

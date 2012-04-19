@@ -117,7 +117,7 @@ def load_csv(filename, lines=None, encoding=None):
     myList = []
     if lines:
         for x in range(lines):
-            x = None
+            y = x; y += y
             try: line = reader.next()
             except: break
             myList.append(line)
