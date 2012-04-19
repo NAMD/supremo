@@ -84,7 +84,8 @@ if __name__ == '__main__':
         corpora.MmCorpus.serialize('gensim-data/corpora/' + str(year) + '_full_corpus_.mm', corpus)
         print 'done'
         lda = gensim.models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=100, update_every=1, chunksize=10000, passes=1)
-        lda.print_topics(20)
+        lda.save('gensim-data/models/'+str(year)+'_model.pickle')
+        lda.show_topics(20)
     supr_cursor.close()      
     pass
 ###############################################################################
