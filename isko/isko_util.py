@@ -4,10 +4,12 @@ Created on Apr 19, 2012
 
 @author: cyg
 '''
+
 from nltk.corpus import stopwords as nltk_stop
 from BeautifulSoup import BeautifulSoup as bfs
 import re
-###############################################################################
+
+
 PLACEHOLDER = u'!AAA'
 stopwords = nltk_stop.words('portuguese')
 stopwords = stopwords + [u'!aaa'
@@ -163,9 +165,8 @@ stopwords = stopwords + [u'!aaa'
 , u'publique-se'
 , u'publique-se.'
 ]
-###############################################################################
 bi_stopwords = [ 'supremo tribunal', 'tribunal federal']
-###############################################################################
+
 def extract_ementa_n_decisao_from_html(html):
     clean_ementa_results = ''
     clean_decisao_results = ''
@@ -187,57 +188,31 @@ def extract_ementa_n_decisao_from_html(html):
                 clean_decisao_results = clean_decisao
         pass
     return (clean_ementa_results, clean_decisao_results)
-###############################################################################
-def clean_tokens(all_tokens): # correct tokenization errors and replace unwanted tokens with PLACEHOLDER
-    for local_count in range(len(all_tokens)):
-#    try:
-        try: local_token = all_tokens[local_count]
-        except: break
-        if not local_token: break
-        
-        ### 
-        if u"º" in all_tokens[local_count]:
-            all_tokens[local_count] = PLACEHOLDER
-        ### 
-        if u"°" in all_tokens[local_count]:
-            all_tokens[local_count] = PLACEHOLDER
-        ### 
-        if u"6.É" in all_tokens[local_count]:
-            all_tokens[local_count] = PLACEHOLDER
-        ### 
-        if u"3.Daí" in all_tokens[local_count]:
-            all_tokens[local_count] = PLACEHOLDER
-        ######
-#        m = re.match(r"(\w+)\.", all_tokens[local_count])
-        m = re.match(r"(\w+)\.", all_tokens[local_count])
-        if m:
-#            print 'm: ',all_tokens[local_count]
-            x = unicode(all_tokens[local_count][0:-1])
-            all_tokens[local_count] = x
-        ###
-        p = re.match(r"(\d+)", all_tokens[local_count])
-        if p: 
-#            print 'p: ',all_tokens[local_count]
-            all_tokens[local_count] = PLACEHOLDER
-        ###
-        n = re.match(r"(\d+)(\.)*", all_tokens[local_count])
-        if n: 
-#            print 'n: ',all_tokens[local_count], 
-            all_tokens[local_count] = PLACEHOLDER
-        ###
-        q = re.match(r"(\d+)/*", all_tokens[local_count])
-        if q: 
-#            print 'q: ',all_tokens[local_count], 
-            all_tokens[local_count] = PLACEHOLDER
-        ###
-        r = re.match(r"\-(\w+)*", all_tokens[local_count])
-        if r:
-#            print 'r: ',all_tokens[local_count]
-            all_tokens[local_count] = PLACEHOLDER
-        ###
-#    except: 
-#        print 'ERROR AT TOKEN',all_tokens[local_count],' ...COUNT',local_count,'. CONTINUING.'
-#        continue
+
+def clean_tokens(all_tokens):
+    '''Correct tokenization errors and replace unwanted tokens with
+    PLACEHOLDER'''
+    print '***', all_tokens
+    unwanted_tokens = [u"º", u"°", u"6.É", u"3.Daí"]
+    unwanted_regexps_str = [r"(\d+)", r"(\d+)(\.)*", r"(\d+)/*", r"\-(\w+)*"]
+    unwanted_regexps = [re.compile(x) for x in unwanted_regexps_str]
+    word_dot_regexp = re.compile(r"(\w+)\.")
+    for index, local_token in enumerate(all_tokens):
+        local_token = local_token.decode('utf-8')
+        if not local_token:
+            all_tokens[index] = PLACEHOLDER
+            continue
+        for unwanted_token in unwanted_tokens:
+            if unwanted_token in local_token:
+                all_tokens[index] = PLACEHOLDER
+                continue
+        if word_dot_regexp.match(local_token):
+            x = unicode(local_token[0:-1])
+            all_tokens[index] = x
+        for unwanted_regexp in unwanted_regexps:
+            if unwanted_regexp.match(local_token):
+                all_tokens[index] = PLACEHOLDER
+                continue
     return all_tokens
 
 
@@ -245,6 +220,3 @@ def clean_tokens(all_tokens): # correct tokenization errors and replace unwanted
 #    x = [('a','b'),('a','c'),('a','d'),('a','e'),('a','f')]
 #    r = x
 #    print r
-
-
-
