@@ -1,0 +1,4 @@
+outputty
+# also needs plotter
+numpy
+matplotlib
