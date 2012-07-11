@@ -17,7 +17,7 @@ def blah(item):
 # sortedItems = sorted(bystateitems.items(), key=blah  )[::-1]
 ###############################################################################
 def getrootsubjects():
-    conn = senDbConn()
+    conn = senDbConn(flagRemoteSSH=True)
     cursor = conn.cursor()
     query = "SELECT DSC_ASSUNTO_COMPLETO from ASSUNTOS where COD_ASSUNTO_PAI is NULL"
     cursor.execute(query)
@@ -26,7 +26,7 @@ def getrootsubjects():
     return result_tup
 ###############################################################################
 def run():
-    
+    all_results = []
     rootsubjects = getrootsubjects()
     
     # cuidado: pode haver um processo com dois andamentos que cabem nos filtros
@@ -73,10 +73,10 @@ def run():
     """
     dat_autuacao_idx = 2
     dat_fechamento_idx = 3
-    conn = senDbConn()
+    conn = senDbConn(flagRemoteSSH=True)
     cursor = conn.cursor()
     total_cases_processed = 0
-    for rootsubject in rootsubjects: 
+    for count,rootsubject in enumerate(rootsubjects): 
         readyquery = startswithquery % rootsubject
         cursor.execute(readyquery)
         count_original_entries = 0
@@ -104,13 +104,16 @@ def run():
         
             
         total_cases_processed += len(cases_per_subjectOfASameRoot_tup)
+        print '==================================================================='
+        print count
         print 'original result length:',rootsubject,len(cases_per_subjectOfASameRoot_tup)
         print 'clean results length', len(clean_result_dict.keys())
         if not len(clean_result_dict.keys()):
             continue
         xx = extract_avg_time(clean_result_dict.values(), 0, 1, rootsubject[0])
         print 'AVG_DURATION_EXTRACTED:', xx
-        print '==================================================================='
+        all_results.append(  (rootsubject[0] , xx , len(cases_per_subjectOfASameRoot_tup) ) )
+    write_to_csv('dados/', 'duracao_por_assunto.csv', ('assunto','duracao','processos'), all_results)
     print 'total_cases_processed:',total_cases_processed
     pass
     cursor.close()
