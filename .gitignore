@@ -9,3 +9,7 @@ plotter.py
 outputty
 .settings
 .directory
+.idea
+.project
+.pydevproject
+.DS_Store
