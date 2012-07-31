@@ -1,0 +1,11 @@
+*.pyc
+*~
+*.swp
+.coverage
+reg_settings.py*
+*.png
+*.ogv
+plotter.py
+outputty
+.settings
+.directory
